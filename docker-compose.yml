@@ -1,0 +1,108 @@
+# docker-compose.yml
+services:
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_SECRET=${NEXTAUTH_SECRET}
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+    depends_on:
+      - backend
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "4000:4000"
+    environment:
+      - NODE_ENV=production
+      - MONGODB_URI=mongodb://mongo:27017/ai-debugger
+      - AI_ENGINE_URL=http://ai-engine:8000
+      - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
+      - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
+      - JWT_SECRET=${JWT_SECRET}
+      - ENCRYPTION_KEY=${ENCRYPTION_KEY}
+      - FRONTEND_URL=http://localhost:3000
+    depends_on:
+      mongo:
+        condition: service_healthy
+      ai-engine:
+        condition: service_started
+    networks:
+      - app-network
+    volumes:
+      - repo-cache:/tmp/repos
+    restart: unless-stopped
+
+  ai-engine:
+    build:
+      context: ./ai-engine
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - OPENAI_API_KEY=${OPENAI_API_KEY}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - DEEPSEEK_API_KEY=${DEEPSEEK_API_KEY}
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8000
+      - CLONE_BASE=/tmp/repos
+      - ENV=production
+    depends_on:
+      chromadb:
+        condition: service_started
+    networks:
+      - app-network
+    volumes:
+      - repo-cache:/tmp/repos
+    restart: unless-stopped
+
+  chromadb:
+    image: chromadb/chroma:latest
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma-data:/chroma/chroma
+    environment:
+      - IS_PERSISTENT=TRUE
+      - ANONYMIZED_TELEMETRY=FALSE
+    networks:
+      - app-network
+    restart: unless-stopped
+
+  mongo:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=ai-debugger
+    networks:
+      - app-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
+  chroma-data:
+  repo-cache:

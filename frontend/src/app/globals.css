@@ -1,0 +1,78 @@
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=Geist:wght@300;400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --surface-0: #0a0a0f;
+  --surface-1: #111118;
+  --surface-2: #18181f;
+  --surface-3: #1e1e28;
+  --surface-4: #252530;
+  --accent-green: #00ff88;
+  --accent-blue: #3b82f6;
+  --accent-purple: #a855f7;
+  --border: rgba(255,255,255,0.06);
+  --border-active: rgba(255,255,255,0.15);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background: var(--surface-0);
+  min-height: 100vh;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: var(--surface-1); }
+::-webkit-scrollbar-thumb { background: var(--surface-4); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--border-active); }
+
+/* Code highlight override */
+.diff-addition { background: rgba(0, 255, 136, 0.08); border-left: 2px solid #00ff88; }
+.diff-deletion { background: rgba(239, 68, 68, 0.08); border-left: 2px solid #ef4444; }
+.diff-context { background: transparent; }
+
+/* Noise overlay */
+.noise::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events: none;
+  z-index: 0;
+  opacity: 0.4;
+}
+
+/* Terminal-style blink cursor */
+@keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.cursor-blink::after {
+  content: '▋';
+  animation: blink 1s step-end infinite;
+  color: var(--accent-green);
+  margin-left: 2px;
+}
+
+/* Glow effects */
+.glow-green { box-shadow: 0 0 20px rgba(0, 255, 136, 0.15); }
+.glow-blue { box-shadow: 0 0 20px rgba(59, 130, 246, 0.15); }
+.text-glow-green { text-shadow: 0 0 20px rgba(0, 255, 136, 0.4); }
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(135deg, #00ff88 0%, #3b82f6 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Analysis steps */
+.step-connector {
+  position: absolute;
+  left: 11px;
+  top: 28px;
+  bottom: -12px;
+  width: 1px;
+  background: linear-gradient(to bottom, rgba(0,255,136,0.3), transparent);
+}

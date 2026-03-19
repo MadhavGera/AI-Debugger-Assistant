@@ -1,0 +1,41 @@
+{
+  "name": "ai-debugger-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "next": "14.2.3",
+    "next-auth": "^4.24.7",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "@monaco-editor/react": "^4.6.0",
+    "monaco-editor": "^0.48.0",
+    "axios": "^1.7.2",
+    "swr": "^2.2.5",
+    "zustand": "^4.5.2",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^2.3.0",
+    "lucide-react": "^0.383.0",
+    "react-hot-toast": "^2.4.1",
+    "react-syntax-highlighter": "^15.5.0",
+    "@types/react-syntax-highlighter": "^15.5.13",
+    "diff2html": "^3.4.48",
+    "framer-motion": "^11.2.10"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.2",
+    "@types/react": "^18.3.3",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.4.5",
+    "tailwindcss": "^3.4.4",
+    "autoprefixer": "^10.4.19",
+    "postcss": "^8.4.38",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.3"
+  }
+}
