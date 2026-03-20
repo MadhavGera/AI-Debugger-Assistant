@@ -1,7 +1,7 @@
 """
 AIDebugger: LangChain-powered analysis engine with support for:
   - Google Gemini (gemini-1.5-pro / gemini-2.0-flash)
-  - OpenAI GPT-4.1 / gpt-4o-mini
+  - OpenAI gpt-3.5-turbo / gpt-3.5-turbo
   - Auto-selects based on which API keys are present
 """
 import os
@@ -101,7 +101,7 @@ class AIDebugger:
             if not key or key.startswith("sk-..."):
                 raise ValueError("OPENAI_API_KEY not set")
             self._openai_primary = ChatOpenAI(
-                model="gpt-4.1", temperature=0.1,
+                model="gpt-3.5-turbo", temperature=0.1,
                 openai_api_key=key, max_tokens=4096,
             )
         return self._openai_primary
@@ -113,7 +113,7 @@ class AIDebugger:
             if not key or key.startswith("sk-..."):
                 raise ValueError("OPENAI_API_KEY not set")
             self._openai_fallback = ChatOpenAI(
-                model="gpt-4o-mini", temperature=0.1,
+                model="gpt-3.5-turbo", temperature=0.1,
                 openai_api_key=key, max_tokens=4096,
             )
         return self._openai_fallback
@@ -159,16 +159,16 @@ class AIDebugger:
     def _get_model_chain(self) -> List[tuple]:
         """
         Returns [(model_getter, model_name), ...] in priority order.
-        Priority: OpenAI GPT-4.1 > Gemini 1.5 Pro > GPT-4o-mini > Gemini Flash
+        Priority: OpenAI gpt-3.5-turbo > Gemini 1.5 Pro > gpt-3.5-turbo > Gemini Flash
         Falls back through the chain until one works.
         """
         chain = []
         if self._has_openai():
-            chain.append((self._get_openai_primary, "gpt-4.1"))
+            chain.append((self._get_openai_primary, "gpt-3.5-turbo"))
         if self._has_gemini():
             chain.append((self._get_gemini_primary, "gemini-1.5-pro"))
         if self._has_openai():
-            chain.append((self._get_openai_fallback, "gpt-4o-mini"))
+            chain.append((self._get_openai_fallback, "gpt-3.5-turbo"))
         if self._has_gemini():
             chain.append((self._get_gemini_fallback, "gemini-2.0-flash"))
         if not chain:

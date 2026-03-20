@@ -3,9 +3,8 @@ uvicorn[standard]==0.34.0
 pydantic==2.11.1
 pydantic-settings==2.8.1
 
-# LangChain ecosystem
+# LangChain
 langchain==0.3.25
-langchain-huggingface==0.1.2
 langchain-community==0.3.24
 langchain-chroma==0.1.4
 
@@ -15,10 +14,10 @@ chromadb==0.5.3
 # Git
 gitpython==3.1.43
 
-# Embeddings
-sentence-transformers==3.0.1
+# OpenAI (embeddings + LLM fallback)
+openai>=1.35.0
 
-# Anthropic
+# Anthropic (LLM for analysis)
 anthropic>=0.25.0
 
 # HTTP & async
