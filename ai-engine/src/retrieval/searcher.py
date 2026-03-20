@@ -7,7 +7,7 @@ import asyncio
 from typing import List, Dict, Any, Optional
 
 import structlog
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import OpenAIEmbeddings
 import chromadb
 
 logger = structlog.get_logger()
@@ -18,7 +18,7 @@ CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8001"))
 
 class VectorSearcher:
     def __init__(self):
-        self.embeddings = HuggingFaceEmbeddings(
+        self.embeddings = OpenAIEmbeddings(
             model_name="all-MiniLM-L6-v2"
         )
         self.chroma_client = chromadb.HttpClient(

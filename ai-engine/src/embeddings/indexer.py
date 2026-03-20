@@ -12,7 +12,7 @@ from typing import List, Dict, Any
 import git
 import chardet
 import structlog
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import OpenAIEmbeddings
 from langchain.text_splitter import RecursiveCharacterTextSplitter, Language
 import chromadb
 
@@ -52,7 +52,7 @@ MAX_FILE_SIZE_KB = 500  # Skip files larger than 500KB
 
 class RepositoryIndexer:
     def __init__(self):
-        self.embeddings = HuggingFaceEmbeddings(
+        self.embeddings = OpenAIEmbeddings(
             model_name="all-MiniLM-L6-v2"
         )
         self.chroma_client = chromadb.HttpClient(
