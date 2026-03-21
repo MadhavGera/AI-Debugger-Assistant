@@ -1,5 +1,5 @@
 """
-VectorSearcher: Embed query via OpenAI → cosine search in ChromaDB.
+VectorSearcher: Embed query via SentenceTransformer -> cosine search in ChromaDB.
 """
 import os
 import asyncio
@@ -7,13 +7,14 @@ from typing import List, Dict, Any, Optional
 
 import structlog
 import chromadb
-from openai import OpenAI
+from sentence_transformers import SentenceTransformer
 
 logger = structlog.get_logger()
 
 CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
 CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
-EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-3-small")
+
+_st_model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 class VectorSearcher:
@@ -24,13 +25,30 @@ class VectorSearcher:
             tenant=chromadb.DEFAULT_TENANT,
             database=chromadb.DEFAULT_DATABASE,
         )
-        self.openai_client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
     def _embed_query(self, text: str) -> List[float]:
-        response = self.openai_client.embeddings.create(model=EMBED_MODEL, input=[text])
-        return response.data[0].embedding
+        return _st_model.encode([text])[0].tolist()
 
-    async def search(self, repo_id: str, query: str, top_k: int = 8, min_score: float = 0.3) -> List[Dict[str, Any]]:
+    def _enrich_query(self, error_text: str) -> str:
+        lines = error_text.split("\n")
+        key_lines = [l.strip() for l in lines if l.strip() and len(l.strip()) > 5][:5]
+        identifiers = []
+        for line in lines:
+            for part in line.strip().split():
+                if "." in part and not part.startswith("http"):
+                    identifiers.append(part.split("(")[0])
+        enriched = "\n".join(key_lines)
+        if identifiers:
+            enriched += "\n\nRelated identifiers: " + ", ".join(identifiers[:10])
+        return enriched
+
+    async def search(
+        self,
+        repo_id: str,
+        query: str,
+        top_k: int = 8,
+        min_score: float = 0.3,
+    ) -> List[Dict[str, Any]]:
         collection_name = f"repo_{repo_id.replace('-', '_')}"
         try:
             collection = self.chroma_client.get_collection(collection_name)
@@ -53,8 +71,8 @@ class VectorSearcher:
             results.get("metadatas", [[]])[0],
             results.get("distances", [[]])[0],
         ):
-            similarity = 1 - (dist / 2)
-            if similarity < min_score:
+            sim = 1 - (dist / 2)
+            if sim < min_score:
                 continue
             chunks.append({
                 "content": doc,
@@ -62,20 +80,7 @@ class VectorSearcher:
                 "start_line": meta.get("start_line", 0),
                 "end_line": meta.get("end_line", 0),
                 "language": meta.get("language", ""),
-                "relevance_score": round(similarity, 4),
+                "relevance_score": round(sim, 4),
             })
         chunks.sort(key=lambda x: x["relevance_score"], reverse=True)
         return chunks[:top_k]
-
-    def _enrich_query(self, error_text: str) -> str:
-        lines = error_text.split("\n")
-        key_lines = [l.strip() for l in lines if l.strip() and len(l.strip()) > 5][:5]
-        identifiers = []
-        for line in lines:
-            for part in line.strip().split():
-                if "." in part and not part.startswith("http"):
-                    identifiers.append(part.split("(")[0])
-        enriched = "\n".join(key_lines)
-        if identifiers:
-            enriched += "\n\nRelated identifiers: " + ", ".join(identifiers[:10])
-        return enriched

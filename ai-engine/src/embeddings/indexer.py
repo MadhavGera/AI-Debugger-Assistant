@@ -2,6 +2,8 @@
 RepositoryIndexer: Clone → chunk → embed via OpenAI → store in ChromaDB.
 """
 import os
+from sentence_transformers import SentenceTransformer
+_st_model = SentenceTransformer('all-MiniLM-L6-v2')
 import asyncio
 import shutil
 import hashlib
@@ -12,7 +14,6 @@ import git
 import chardet
 import structlog
 import chromadb
-from openai import OpenAI
 from langchain.text_splitter import RecursiveCharacterTextSplitter, Language
 
 logger = structlog.get_logger()
@@ -20,7 +21,6 @@ logger = structlog.get_logger()
 CLONE_BASE = os.getenv("CLONE_BASE", "/tmp/repos")
 CHROMA_HOST = os.getenv("CHROMA_HOST", "localhost")
 CHROMA_PORT = int(os.getenv("CHROMA_PORT", "8000"))
-EMBED_MODEL = os.getenv("EMBED_MODEL", "text-embedding-3-small")
 
 SUPPORTED_EXTENSIONS = {
     ".py", ".js", ".ts", ".jsx", ".tsx", ".java", ".go",
@@ -51,10 +51,9 @@ def _get_chroma_client():
     )
 
 
-def _embed(texts: List[str]) -> List[List[float]]:
-    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    response = client.embeddings.create(model=EMBED_MODEL, input=texts)
-    return [item.embedding for item in response.data]
+def _embed(texts):
+    return _st_model.encode(texts, convert_to_numpy=True).tolist()
+
 
 
 class RepositoryIndexer:
