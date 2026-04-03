@@ -2,7 +2,7 @@ import NextAuth, { AuthOptions } from 'next-auth';
 import GitHubProvider from 'next-auth/providers/github';
 import axios from 'axios';
 
-const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
+const BACKEND_URL = process.env.INTERNAL_BACKEND_URL || process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000';
 
 const authOptions: AuthOptions = {
   providers: [
