@@ -1,11 +1,18 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/layout/Providers';
 import { Toaster } from 'react-hot-toast';
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ 
+  subsets: ['latin'],
+  variable: '--font-sans',
+});
 
+const jetbrainsMono = JetBrains_Mono({ 
+  subsets: ['latin'],
+  variable: '--font-mono',
+});
 export const metadata: Metadata = {
   title: 'AI GitHub Debugger',
   description: 'AI-powered debugging assistant that auto-generates pull requests',
@@ -14,14 +21,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&family=Geist:wght@300;400;500;600&display=swap"
-          rel="stylesheet"
-        />
-      </head>
-      <body className={`${inter.className} bg-surface-0 text-white antialiased`}>
+      <body className={`${inter.variable} ${jetbrainsMono.variable} font-sans bg-surface-0 text-slate-300 antialiased`}>
         <Providers>
           {children}
           <Toaster
@@ -29,9 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             toastOptions={{
               style: {
                 background: '#18181f',
-                color: '#fff',
+                color: '#f8fafc', // slate-50
                 border: '1px solid #ffffff15',
-                fontFamily: 'Geist, sans-serif',
+                fontFamily: 'var(--font-sans)',
                 fontSize: '14px',
               },
               success: { iconTheme: { primary: '#00ff88', secondary: '#0a0a0f' } },
